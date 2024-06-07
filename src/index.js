@@ -7,27 +7,25 @@ dotenv.config({
     path: './env'
 })
 
+const port = process.env.PORT || 8001;
+
 connectDB()
-    .then(() =>{
-        app.listen(process.env.PORT || 8000, () => {
-            console.log(`Server listening at port: ${process.env.PORT}`);
-        })
-    })
-    .catch((err) => {
-        console.log("Mongo DB connection Failed!!", err);
-    })
+.then(() => {
+    const server = app.listen(port, () => {
+        console.log(`Server listening at port: ${port}`);
+    });
 
-
-
-
-// import express from "express"
-// const app = express();
-
-// (async () => {
-//     try {
-//         await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
-//     } catch (error) {
-//         console.log("Error: ", error);
-//         throw error
-//     }
-// })()
+    server.on('error', (err) => {
+        if (err.code === 'EACCES') {
+            console.error(`Port ${port} requires elevated privileges`);
+        } else if (err.code === 'EADDRINUSE') {
+            console.error(`Port ${port} is already in use`);
+        } else {
+            console.error(`Server error: ${err}`);
+        }
+        process.exit(1);
+    });
+})
+.catch((err) => {
+    console.error("MongoDB connection Failed!!", err);
+});
